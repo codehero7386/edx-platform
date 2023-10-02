@@ -15,6 +15,7 @@ from pytz import UTC
 from common.djangoapps.student.models import CourseEnrollment
 from openedx.core.djangoapps.notifications.config.waffle import ENABLE_NOTIFICATIONS
 from openedx.core.djangoapps.notifications.events import notification_generated_event
+from openedx.core.djangoapps.notifications.filters import NotificationFilter
 from openedx.core.djangoapps.notifications.models import (
     CourseNotificationPreference,
     Notification,
@@ -97,32 +98,36 @@ def send_notifications(user_ids, course_key: str, app_name, notification_type, c
         course_id=course_key,
     )
     preferences = create_notification_pref_if_not_exists(user_ids, list(preferences), course_key)
-    notifications = []
-    audience = []
+
     for preference in preferences:
         preference = update_user_preference(preference, preference.user, course_key)
-        if (
+        if not (
             preference and
             preference.get_web_config(app_name, notification_type) and
             preference.get_app_config(app_name).get('enabled', False)
         ):
-            notifications.append(
-                Notification(
-                    user_id=preference.user_id,
-                    app_name=app_name,
-                    notification_type=notification_type,
-                    content_context=context,
-                    content_url=content_url,
-                    course_id=course_key,
-                )
+            user_ids.remove(preference.user_id)
+
+    user_ids = NotificationFilter().apply_filters(user_ids, course_key, notification_type)
+
+    notifications = []
+    for user_id in user_ids:
+        notifications.append(
+            Notification(
+                user_id=user_id,
+                app_name=app_name,
+                notification_type=notification_type,
+                content_context=context,
+                content_url=content_url,
+                course_id=course_key,
             )
-            audience.append(preference.user_id)
+        )
     # send notification to users but use bulk_create
     notifications_generated = Notification.objects.bulk_create(notifications)
     if notifications_generated:
         notification_content = notifications_generated[0].content
         notification_generated_event(
-            audience, app_name, notification_type, course_key, content_url, notification_content,
+            user_ids, app_name, notification_type, course_key, content_url, notification_content,
         )
 
 
