@@ -1,3 +1,6 @@
+"""
+Test for the NotificationFilter class.
+"""
 from datetime import timedelta
 from unittest import mock
 
