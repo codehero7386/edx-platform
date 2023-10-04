@@ -34,6 +34,10 @@ class CourseExpirationTestCase(ModuleStoreTestCase):
         # Make this a verified course, so we can test expiration date
         add_course_mode(self.course, mode_slug=CourseMode.AUDIT)
         add_course_mode(self.course)
+        CourseEnrollment.enroll(self.user, self.course.id, CourseMode.AUDIT)
+        expired_audit = CourseEnrollment.enroll(self.user, self.course.id, CourseMode.AUDIT)
+        expired_audit.created = now() - timedelta(weeks=6)
+        expired_audit.save()
 
     @mock.patch("openedx.core.djangoapps.course_date_signals.utils.get_course_run_details")
     def test_audit_expired_filter(
@@ -43,11 +47,6 @@ class CourseExpirationTestCase(ModuleStoreTestCase):
         """
         Test if filter_audit_expired function is working correctly
         """
-
-        CourseEnrollment.enroll(self.user, self.course.id, CourseMode.AUDIT)
-        expired_audit = CourseEnrollment.enroll(self.user, self.course.id, CourseMode.AUDIT)
-        expired_audit.created = now() - timedelta(weeks=6)
-        expired_audit.save()
 
         mock_get_course_run_details.return_value = {'weeks_to_complete': 4}
         result = NotificationFilter.filter_audit_expired(
@@ -75,3 +74,23 @@ class CourseExpirationTestCase(ModuleStoreTestCase):
             self.course,
         )
         self.assertEqual([self.user.id, self.user_1.id], result)
+
+    @mock.patch("openedx.core.djangoapps.course_date_signals.utils.get_course_run_details")
+    @mock.patch("openedx.core.djangoapps.notifications.filters.NotificationFilter.filter_audit_expired")
+    def test_apply_filter(
+        self,
+        mock_filter_audit_expired,
+        mock_get_course_run_details,
+    ):
+        """
+        Test if apply_filter function is working correctly
+        """
+        mock_get_course_run_details.return_value = {'weeks_to_complete': 4}
+        mock_filter_audit_expired.return_value = [self.user.id, self.user_1.id]
+        result = NotificationFilter().apply_filters(
+            [self.user.id, self.user_1.id],
+            self.course.id,
+            'new_comment_on_response'
+        )
+        self.assertEqual([self.user.id, self.user_1.id], result)
+        mock_filter_audit_expired.assert_called_once()

@@ -19,7 +19,7 @@ COURSE_NOTIFICATION_TYPES = {
             'replier_name': 'replier name',
         },
         'email_template': '',
-        'filter': [FILTER_AUDIT_EXPIRED]
+        'filters': [FILTER_AUDIT_EXPIRED]
     },
     'new_comment': {
         'notification_app': 'discussion',
@@ -33,7 +33,7 @@ COURSE_NOTIFICATION_TYPES = {
             'replier_name': 'replier name',
         },
         'email_template': '',
-        'filter': [FILTER_AUDIT_EXPIRED]
+        'filters': [FILTER_AUDIT_EXPIRED]
     },
     'new_response': {
         'notification_app': 'discussion',
@@ -46,7 +46,7 @@ COURSE_NOTIFICATION_TYPES = {
             'replier_name': 'replier name',
         },
         'email_template': '',
-        'filter': [FILTER_AUDIT_EXPIRED]
+        'filters': [FILTER_AUDIT_EXPIRED]
     },
     'new_discussion_post': {
         'notification_app': 'discussion',
@@ -63,7 +63,7 @@ COURSE_NOTIFICATION_TYPES = {
             'username': 'Post author name',
         },
         'email_template': '',
-        'filter': [FILTER_AUDIT_EXPIRED]
+        'filters': [FILTER_AUDIT_EXPIRED]
     },
     'new_question_post': {
         'notification_app': 'discussion',
@@ -80,7 +80,7 @@ COURSE_NOTIFICATION_TYPES = {
             'username': 'Post author name',
         },
         'email_template': '',
-        'filter': [FILTER_AUDIT_EXPIRED]
+        'filters': [FILTER_AUDIT_EXPIRED]
     },
 
 }

@@ -13,7 +13,7 @@ from opaque_keys.edx.keys import CourseKey
 from pytz import UTC
 
 from common.djangoapps.student.models import CourseEnrollment
-from openedx.core.djangoapps.notifications.config.waffle import ENABLE_NOTIFICATIONS
+from openedx.core.djangoapps.notifications.config.waffle import ENABLE_NOTIFICATIONS, ENABLE_NOTIFICATIONS_FILTERS
 from openedx.core.djangoapps.notifications.events import notification_generated_event
 from openedx.core.djangoapps.notifications.filters import NotificationFilter
 from openedx.core.djangoapps.notifications.models import (
@@ -108,7 +108,10 @@ def send_notifications(user_ids, course_key: str, app_name, notification_type, c
         ):
             user_ids.remove(preference.user_id)
 
-    user_ids = NotificationFilter().apply_filters(user_ids, course_key, notification_type)
+    if ENABLE_NOTIFICATIONS_FILTERS.is_enabled(course_key):
+        logger.info(f'Sending notifications to {len(user_ids)} users.')
+        user_ids = NotificationFilter().apply_filters(user_ids, course_key, notification_type)
+        logger.info(f'After applying filters, sending notifications to {len(user_ids)} users.')
 
     notifications = []
     for user_id in user_ids:
