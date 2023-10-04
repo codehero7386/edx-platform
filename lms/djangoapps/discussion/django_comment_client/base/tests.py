@@ -1690,7 +1690,7 @@ class TeamsPermissionsTestCase(ForumsEnableMixin, UrlResetMixin, SharedModuleSto
         commentable_id = getattr(self, commentable_id)
         self._setup_mock(
             user, mock_request,
-            {"closed": False, "commentable_id": commentable_id, "body": "dummy body"},
+            {"closed": False, "commentable_id": commentable_id, "body": "dummy body", "title": "test title"},
         )
         for action in ["upvote_thread", "downvote_thread", "un_flag_abuse_for_thread", "flag_abuse_for_thread",
                        "follow_thread", "unfollow_thread"]:
